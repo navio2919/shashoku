@@ -191,7 +191,9 @@ function render() {
     </tr>
   `).join("");
 
-  renderSummary(monthSummary, summarizeBy(entry => `${entry.closingMonth || getClosingMonth(entry.date)}締め`));
+renderSummary(monthSummary, summarizeBy(entry =>
+  formatClosingMonthLabel(entry.closingMonth || getClosingMonth(entry.date))
+));
   renderSummary(userSummary, summarizeBy(entry => entry.user));
 }
 
@@ -200,7 +202,7 @@ function exportCsv() {
   const rows = entries.map(entry => [
     entry.timestamp || "",
     entry.date || "",
-    entry.closingMonth || getClosingMonth(entry.date),
+    formatClosingMonthLabel(entry.closingMonth || getClosingMonth(entry.date)),
     entry.user || "",
     entry.menu || "",
     entry.amount || 0,
