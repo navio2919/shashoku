@@ -130,16 +130,14 @@ async function addEntry(event) {
       body: JSON.stringify(entry)
     });
 
-    setStatus("登録しました。最新データを取得します。");
+    setStatus("登録しました。");
     form.reset();
     document.querySelector("#date").valueAsDate = new Date();
     updateAmountFromMenu();
 
     // no-cors ではレスポンスを読めないため、少し待ってから取得します。
     setTimeout(fetchEntries, 800);
-  } catch (error) {
-    setStatus("登録に失敗しました。Apps Script のURLや公開設定を確認してください。", true);
-  }
+  } 
 }
 
 async function fetchEntries() {
