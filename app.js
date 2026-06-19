@@ -181,9 +181,9 @@ function renderSummary(container, summary) {
 function render() {
   entryTable.innerHTML = entries.map(entry => `
     <tr>
-      <td>${entry.timestamp || ""}</td>
-      <td>${entry.date || ""}</td>
-      <td>${entry.closingMonth || getClosingMonth(entry.date)}</td>
+<td>${formatDateTimeLabel(entry.timestamp)}</td>
+<td>${entry.date || ""}</td>
+<td>${formatClosingMonthLabel(entry.closingMonth || getClosingMonth(entry.date))}</td>
       <td>${entry.user || ""}</td>
       <td>${entry.menu || ""}</td>
       <td>${yen(entry.amount || 0)}</td>
@@ -218,6 +218,37 @@ function exportCsv() {
   link.download = "shashoku_summary.csv";
   link.click();
   URL.revokeObjectURL(url);
+}
+
+function formatDateTimeLabel(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (isNaN(date)) return value;
+
+  return date.toLocaleString("ja-JP", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function formatClosingMonthLabel(value) {
+  if (!value) return "";
+
+  // 2026-06 の場合
+  if (/^\d{4}-\d{2}$/.test(value)) {
+    return `${Number(value.split("-")[1])}月締め`;
+  }
+
+  // 2026-05-31T15:00:00.000Z の場合
+  const date = new Date(value);
+  if (!isNaN(date)) {
+    return `${date.getMonth() + 1}月締め`;
+  }
+
+  return value;
 }
 
 init();
