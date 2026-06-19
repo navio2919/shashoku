@@ -10,12 +10,17 @@
   <main class="app">
     <header class="hero">
       <div>
-        <p class="eyebrow">20日締め対応</p>
+        <p class="eyebrow">20日締め・Googleスプレッドシート連携</p>
         <h1>社食利用料金 集計</h1>
-        <p>利用者10人向けのかんたん入力・集計画面です。</p>
+        <p>メニューを選ぶだけで金額が入り、全員分を同じスプレッドシートへ保存します。</p>
       </div>
-      <button id="downloadCsv" class="secondary">CSV出力</button>
+      <button id="syncButton" class="secondary">最新データ取得</button>
     </header>
+
+    <section class="card notice">
+      <strong>初回設定：</strong>
+      <span>app.js の <code>GAS_WEB_APP_URL</code> に、Google Apps Script のウェブアプリURLを入れてください。</span>
+    </section>
 
     <section class="card">
       <h2>利用登録</h2>
@@ -24,20 +29,32 @@
           利用日
           <input type="date" id="date" required />
         </label>
+
         <label>
           利用者
           <select id="user" required></select>
         </label>
+
+        <label>
+          メニュー
+          <select id="menu" required></select>
+        </label>
+
         <label>
           金額
-          <input type="number" id="amount" min="0" step="1" placeholder="例：480" required />
+          <input type="number" id="amount" min="0" step="1" required />
         </label>
+
         <label>
           備考
-          <input type="text" id="memo" placeholder="例：定食A" />
+          <input type="text" id="memo" placeholder="例：大盛り、現金調整など" />
         </label>
-        <button type="submit">追加する</button>
+
+        <button type="submit">登録する</button>
       </form>
+
+      <div class="menu-buttons" id="menuButtons"></div>
+      <p id="status" class="status"></p>
     </section>
 
     <section class="summary-grid">
@@ -54,18 +71,19 @@
     <section class="card">
       <div class="list-header">
         <h2>利用明細</h2>
-        <button id="clearData" class="danger">デモデータを削除</button>
+        <button id="downloadCsv" class="secondary dark">CSV出力</button>
       </div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
+              <th>登録日時</th>
               <th>利用日</th>
               <th>締め月</th>
               <th>利用者</th>
+              <th>メニュー</th>
               <th>金額</th>
               <th>備考</th>
-              <th></th>
             </tr>
           </thead>
           <tbody id="entryTable"></tbody>

@@ -10,7 +10,7 @@ body {
 }
 
 .app {
-  width: min(1080px, 100%);
+  width: min(1120px, 100%);
   margin: 0 auto;
   padding: 20px;
 }
@@ -51,6 +51,20 @@ body {
   margin-bottom: 18px;
 }
 
+.notice {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  background: #fff8e1;
+  color: #4e342e;
+}
+
+code {
+  background: rgba(0,0,0,.08);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
 h2 {
   margin: 0 0 14px;
   font-size: 18px;
@@ -58,7 +72,7 @@ h2 {
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: 1fr 1fr 1.2fr .8fr 1.4fr .9fr;
   gap: 12px;
   align-items: end;
 }
@@ -92,14 +106,39 @@ button:hover {
 
 .secondary {
   width: auto;
-  min-width: 120px;
+  min-width: 140px;
   background: white;
   color: #263238;
 }
 
-.danger {
+.dark {
+  background: #455a64;
+  color: white;
+}
+
+.menu-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.menu-buttons button {
   width: auto;
-  background: #e53935;
+  background: #eef4fb;
+  color: #1565c0;
+  border: 1px solid #bbdefb;
+}
+
+.status {
+  min-height: 22px;
+  margin: 14px 0 0;
+  color: #1565c0;
+  font-weight: 700;
+}
+
+.status.error {
+  color: #c62828;
 }
 
 .summary-grid {
@@ -133,7 +172,7 @@ button:hover {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 720px;
+  min-width: 880px;
 }
 
 th, td {
@@ -147,13 +186,7 @@ th {
   font-size: 13px;
 }
 
-.delete {
-  background: #eceff1;
-  color: #37474f;
-  padding: 8px 10px;
-}
-
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .hero {
     display: block;
   }
@@ -165,5 +198,9 @@ th {
 
   .form-grid, .summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .secondary {
+    width: 100%;
   }
 }

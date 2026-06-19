@@ -1,28 +1,34 @@
+// Google Apps Script のウェブアプリURLをここに貼り付けてください。
+// 例: const GAS_WEB_APP_URL = "https://script.google.com/macros/s/xxxxxxxxxxxx/exec";
+const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx6e7llJuQvAAHAFpE4hVFWLuJz0pbSpmpOJff68VfciXAmyDZ5UObygCWtVshYMsll/exec";
+
 const USERS = [
-  "東條りな", "田中", "佐藤", "鈴木", "高橋",
+  "東條", "田中", "佐藤", "鈴木", "高橋",
   "伊藤", "山本", "中村", "小林", "加藤"
 ];
 
-const STORAGE_KEY = "shashoku_entries_v1";
-
-const sampleEntries = [
-  { date: "2026-06-21", user: "東條りな", amount: 480, memo: "定食A" },
-  { date: "2026-06-24", user: "田中", amount: 520, memo: "カレー" },
-  { date: "2026-07-03", user: "東條りな", amount: 450, memo: "そば" },
-  { date: "2026-07-08", user: "佐藤", amount: 600, memo: "定食B" },
-  { date: "2026-07-20", user: "東條りな", amount: 500, memo: "日替わり" },
-  { date: "2026-07-21", user: "田中", amount: 530, memo: "定食A" }
+const MENUS = [
+  { name: "日替わり定食", price: 500 },
+  { name: "カレー", price: 450 },
+  { name: "うどん", price: 380 },
+  { name: "そば", price: 380 },
+  { name: "弁当", price: 550 },
+  { name: "その他", price: 0 }
 ];
 
-let entries = loadEntries();
+let entries = [];
 
 const userSelect = document.querySelector("#user");
+const menuSelect = document.querySelector("#menu");
+const amountInput = document.querySelector("#amount");
 const form = document.querySelector("#mealForm");
 const entryTable = document.querySelector("#entryTable");
 const monthSummary = document.querySelector("#monthSummary");
 const userSummary = document.querySelector("#userSummary");
-const clearData = document.querySelector("#clearData");
+const statusMessage = document.querySelector("#status");
+const syncButton = document.querySelector("#syncButton");
 const downloadCsv = document.querySelector("#downloadCsv");
+const menuButtons = document.querySelector("#menuButtons");
 
 function init() {
   USERS.forEach(name => {
@@ -32,24 +38,44 @@ function init() {
     userSelect.appendChild(option);
   });
 
-  document.querySelector("#date").valueAsDate = new Date();
+  MENUS.forEach(menu => {
+    const option = document.createElement("option");
+    option.value = menu.name;
+    option.dataset.price = menu.price;
+    option.textContent = `${menu.name}（${yen(menu.price)}）`;
+    menuSelect.appendChild(option);
 
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = `${menu.name} ${yen(menu.price)}`;
+    button.addEventListener("click", () => selectMenu(menu.name));
+    menuButtons.appendChild(button);
+  });
+
+  document.querySelector("#date").valueAsDate = new Date();
+  updateAmountFromMenu();
+
+  menuSelect.addEventListener("change", updateAmountFromMenu);
   form.addEventListener("submit", addEntry);
-  clearData.addEventListener("click", resetDemo);
+  syncButton.addEventListener("click", fetchEntries);
   downloadCsv.addEventListener("click", exportCsv);
 
-  render();
+  fetchEntries();
 }
 
-function loadEntries() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) return JSON.parse(saved);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(sampleEntries));
-  return sampleEntries;
+function selectMenu(menuName) {
+  menuSelect.value = menuName;
+  updateAmountFromMenu();
 }
 
-function saveEntries() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+function updateAmountFromMenu() {
+  const option = menuSelect.selectedOptions[0];
+  amountInput.value = option ? option.dataset.price : "";
+}
+
+function setStatus(message, isError = false) {
+  statusMessage.textContent = message;
+  statusMessage.classList.toggle("error", isError);
 }
 
 function getClosingMonth(dateStr) {
@@ -74,38 +100,69 @@ function yen(amount) {
   return `${Number(amount).toLocaleString()}円`;
 }
 
-function addEntry(event) {
+async function addEntry(event) {
   event.preventDefault();
 
-  entries.push({
+  const entry = {
+    action: "add",
+    timestamp: new Date().toISOString(),
     date: document.querySelector("#date").value,
-    user: document.querySelector("#user").value,
-    amount: Number(document.querySelector("#amount").value),
+    closingMonth: getClosingMonth(document.querySelector("#date").value),
+    user: userSelect.value,
+    menu: menuSelect.value,
+    amount: Number(amountInput.value),
     memo: document.querySelector("#memo").value.trim()
-  });
+  };
 
-  saveEntries();
-  form.reset();
-  document.querySelector("#date").valueAsDate = new Date();
-  render();
+  if (!GAS_WEB_APP_URL) {
+    setStatus("GAS_WEB_APP_URL が未設定です。app.js にURLを入れてください。", true);
+    return;
+  }
+
+  try {
+    setStatus("登録中です...");
+    await fetch(GAS_WEB_APP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(entry)
+    });
+
+    setStatus("登録しました。最新データを取得します。");
+    form.reset();
+    document.querySelector("#date").valueAsDate = new Date();
+    updateAmountFromMenu();
+
+    // no-cors ではレスポンスを読めないため、少し待ってから取得します。
+    setTimeout(fetchEntries, 800);
+  } catch (error) {
+    setStatus("登録に失敗しました。Apps Script のURLや公開設定を確認してください。", true);
+  }
 }
 
-function deleteEntry(index) {
-  entries.splice(index, 1);
-  saveEntries();
-  render();
-}
+async function fetchEntries() {
+  if (!GAS_WEB_APP_URL) {
+    setStatus("GAS_WEB_APP_URL が未設定です。app.js にURLを入れてください。", true);
+    render();
+    return;
+  }
 
-function resetDemo() {
-  entries = [];
-  saveEntries();
-  render();
+  try {
+    setStatus("最新データを取得中です...");
+    const response = await fetch(`${GAS_WEB_APP_URL}?action=list`);
+    const data = await response.json();
+    entries = data.entries || [];
+    setStatus(`最新データを取得しました。${entries.length}件`);
+    render();
+  } catch (error) {
+    setStatus("データ取得に失敗しました。Apps Script のURLや公開設定を確認してください。", true);
+  }
 }
 
 function summarizeBy(keyFn) {
   return entries.reduce((acc, entry) => {
     const key = keyFn(entry);
-    acc[key] = (acc[key] || 0) + Number(entry.amount);
+    acc[key] = (acc[key] || 0) + Number(entry.amount || 0);
     return acc;
   }, {});
 }
@@ -122,28 +179,31 @@ function renderSummary(container, summary) {
 }
 
 function render() {
-  entryTable.innerHTML = entries.map((entry, index) => `
+  entryTable.innerHTML = entries.map(entry => `
     <tr>
-      <td>${entry.date}</td>
-      <td>${getClosingMonth(entry.date)}</td>
-      <td>${entry.user}</td>
-      <td>${yen(entry.amount)}</td>
+      <td>${entry.timestamp || ""}</td>
+      <td>${entry.date || ""}</td>
+      <td>${entry.closingMonth || getClosingMonth(entry.date)}</td>
+      <td>${entry.user || ""}</td>
+      <td>${entry.menu || ""}</td>
+      <td>${yen(entry.amount || 0)}</td>
       <td>${entry.memo || ""}</td>
-      <td><button class="delete" onclick="deleteEntry(${index})">削除</button></td>
     </tr>
   `).join("");
 
-  renderSummary(monthSummary, summarizeBy(entry => `${getClosingMonth(entry.date)}締め`));
+  renderSummary(monthSummary, summarizeBy(entry => `${entry.closingMonth || getClosingMonth(entry.date)}締め`));
   renderSummary(userSummary, summarizeBy(entry => entry.user));
 }
 
 function exportCsv() {
-  const header = ["利用日", "締め月", "利用者", "金額", "備考"];
+  const header = ["登録日時", "利用日", "締め月", "利用者", "メニュー", "金額", "備考"];
   const rows = entries.map(entry => [
-    entry.date,
-    getClosingMonth(entry.date),
-    entry.user,
-    entry.amount,
+    entry.timestamp || "",
+    entry.date || "",
+    entry.closingMonth || getClosingMonth(entry.date),
+    entry.user || "",
+    entry.menu || "",
+    entry.amount || 0,
     entry.memo || ""
   ]);
 
@@ -160,5 +220,4 @@ function exportCsv() {
   URL.revokeObjectURL(url);
 }
 
-window.deleteEntry = deleteEntry;
 init();
