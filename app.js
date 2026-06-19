@@ -149,16 +149,6 @@ async function fetchEntries() {
     return;
   }
 
-  try {
-    setStatus("最新データを取得中です...");
-    const response = await fetch(`${GAS_WEB_APP_URL}?action=list`);
-    const data = await response.json();
-    entries = data.entries || [];
-    setStatus(`最新データを取得しました。${entries.length}件`);
-    render();
-  } catch (error) {
-    setStatus("データ取得に失敗しました。Apps Script のURLや公開設定を確認してください。", true);
-  }
 }
 
 function summarizeBy(keyFn) {
