@@ -3,17 +3,19 @@
 const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx6e7llJuQvAAHAFpE4hVFWLuJz0pbSpmpOJff68VfciXAmyDZ5UObygCWtVshYMsll/exec";
 
 const USERS = [
-  "東條", "田中", "佐藤", "鈴木", "高橋",
-  "伊藤", "山本", "中村", "小林", "加藤"
+  "田中", "青木", "川井", "志田", "森",
+  "弘重", "大川", "東條", "御法川", "冨田"
 ];
 
 const MENUS = [
-  { name: "日替わり定食", price: 500 },
-  { name: "カレー", price: 450 },
-  { name: "うどん", price: 380 },
-  { name: "そば", price: 380 },
-  { name: "弁当", price: 550 },
-  { name: "その他", price: 0 }
+  { name: "冷凍総菜セット 12種", price: 250 },
+  { name: "スープDELI 5種のバラエティ", price: 110 },
+  { name: "あさげ・ひるげ・ゆうげ", price: 20 },
+  { name: "スープDELI カルボナーラ", price: 100 },
+  { name: "スープDELI たらこ", price: 100 },
+  { name: "スープDELI サーモンとほうれん草", price: 100 },
+  { name: "サトウのごはん", price: 110 },
+  { name: "カレーメシ", price: 190 }
 ];
 
 let entries = [];
