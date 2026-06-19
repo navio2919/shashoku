@@ -10,12 +10,12 @@ const USERS = [
 const MENUS = [
   { name: "冷凍総菜セット 12種", price: 250 },
   { name: "スープDELI 5種のバラエティ", price: 110 },
-  { name: "あさげ・ひるげ・ゆうげ", price: 20 },
-  { name: "スープDELI カルボナーラ", price: 100 },
-  { name: "スープDELI たらこ", price: 100 },
-  { name: "スープDELI サーモンとほうれん草", price: 100 },
-  { name: "サトウのごはん", price: 110 },
-  { name: "カレーメシ", price: 190 }
+  { name: "あさげ・ひるげ・ゆうげ 粉末 おみそ汁アソート", price: 20 },
+  { name: "スープDELI クリーミーカルボナーラ", price: 100 },
+  { name: "スープDELI たらこクリームスープパスタ", price: 100 },
+  { name: "スープDELI サーモンとほうれん草のクリームスープパスタ", price: 100 },
+  { name: "サトウのごはん 新潟県産コシヒカリ", price: 110 },
+  { name: "カレーメシ 欧風カレー", price: 190 }
 ];
 
 let entries = [];
