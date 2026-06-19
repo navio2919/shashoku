@@ -192,7 +192,7 @@ function render() {
   `).join("");
 
 renderSummary(monthSummary, summarizeBy(entry =>
-  formatClosingMonthLabel(entry.closingMonth || getClosingMonth(entry.date))
+  formatClosingMonthLabel(getClosingMonth(entry.date))
 ));
   renderSummary(userSummary, summarizeBy(entry => entry.user));
 }
